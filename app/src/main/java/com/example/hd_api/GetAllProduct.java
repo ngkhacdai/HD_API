@@ -7,8 +7,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +21,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.hd_api.models.Product;
-import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,7 +61,8 @@ public class GetAllProduct extends AppCompatActivity {
                     String description  = productObject.getString("description");
                     int price = productObject.getInt("price");
                     String category  = productObject.getString("category");
-                    String image  = productObject.getString("image");
+                    JSONObject imgObject = productObject.getJSONObject("image");
+                    String image = imgObject.getString("data");
                     int stockQuantity   = productObject.getInt("stockQuantity");
                     Product product = new Product(_id,name,description,price,category,image,stockQuantity);
                     list.add(product);
@@ -146,8 +149,7 @@ public class GetAllProduct extends AppCompatActivity {
         public void onBindViewHolder(@NonNull ProductAdapter.ViewHolder holder, int position) {
             Product product = list.get(position);
             holder.tvid.setText(product.get_id());
-            String urlimage = "https://foodapp-7o77.onrender.com/uploads/"+ product.getImage();
-            Picasso.get().load(urlimage).into(holder.imageView);
+            holder.imageView.setImageBitmap(decodeBase64(product.getImage()));
             holder.tvname.setText(product.getName());
             holder.tvprice.setText(product.getPrice()+"");
         }
@@ -158,7 +160,6 @@ public class GetAllProduct extends AppCompatActivity {
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
-            Product product;
             ImageView imageView;
             TextView tvid,tvname,tvprice;
             public ViewHolder(@NonNull View itemView) {
@@ -169,5 +170,10 @@ public class GetAllProduct extends AppCompatActivity {
                 tvprice = itemView.findViewById(R.id.tvprice);
             }
         }
+    }
+    private Bitmap decodeBase64(String base64Image) {
+        byte[] decodedImage = Base64.decode(base64Image, Base64.DEFAULT);
+        Bitmap bitmap = BitmapFactory.decodeByteArray(decodedImage, 0, decodedImage.length);
+        return bitmap;
     }
 }
